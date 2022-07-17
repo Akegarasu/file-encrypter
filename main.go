@@ -73,7 +73,7 @@ func AESCfb(inputName string, outputName string, key []byte, mode int) {
 	}
 }
 
-func checkFileSha1(file1 string, file2 string) bool {
+func checkFileSha256(file1 string, file2 string) bool {
 	f1, err := os.Open(file1)
 	if err != nil {
 		log.Fatal(err)
@@ -114,11 +114,11 @@ func main() {
 		log.Fatal("no commands")
 	}
 	switch cmds[0] {
-	case "sha1":
+	case "sha":
 		if len(cmds) != 3 {
 			log.Fatal("files not enough")
 		}
-		if checkFileSha1(cmds[1], cmds[2]) {
+		if checkFileSha256(cmds[1], cmds[2]) {
 			log.Println("equals")
 		} else {
 			log.Fatal("not equal")
