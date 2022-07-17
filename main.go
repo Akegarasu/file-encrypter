@@ -152,7 +152,6 @@ func main() {
 		log.Printf("encrypting %s -> %s", inputFile, outputFile)
 		AESCfb(inputFile, outputFile, keySha[:], ENCRYPT)
 	case "d":
-		mustNotNull(inputFile, "input file")
 		if outputFile == "" && strings.HasSuffix(inputFile, ".enc") {
 			outputFile = inputFile[:len(inputFile)-4]
 		}
