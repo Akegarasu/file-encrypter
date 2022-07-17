@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -73,24 +74,45 @@ func AESCfb(inputName string, outputName string, key []byte, mode int) {
 	}
 }
 
-func checkFileSha256(file1 string, file2 string) bool {
-	f1, err := os.Open(file1)
+func shaFile(fileName string) string {
+	f1, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	f2, err := os.Open(file2)
-	if err != nil {
-		log.Fatal(err)
-	}
-	h1 := sha256.New()
-	h2 := sha256.New()
-	if _, err = io.Copy(h1, f1); err != nil {
+	hash := sha256.New()
+	if _, err = io.Copy(hash, f1); err != nil {
 		fmt.Println(err)
 	}
-	if _, err = io.Copy(h2, f2); err != nil {
-		fmt.Println(err)
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+func checkFileSha256(files []string) {
+	m := make(map[string]string)
+	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	for _, f := range files {
+		go func() {
+			sha := shaFile(f)
+			mu.Lock()
+			m[f] = sha
+			mu.Unlock()
+			wg.Done()
+		}()
+		wg.Add(1)
 	}
-	return hex.EncodeToString(h1.Sum(nil)) == hex.EncodeToString(h2.Sum(nil))
+	wg.Wait()
+	if len(files) != 1 {
+		orig := m[files[0]]
+		for _, f := range files {
+			log.Printf("file sha: %s [%s]", m[f], f)
+			if m[f] != orig {
+				log.Fatal("not equals")
+			}
+		}
+		log.Printf("equals")
+	} else {
+		log.Printf("file sha: %s", m[files[0]])
+	}
 }
 
 func mustNotNull(s string, name string) {
@@ -115,13 +137,8 @@ func main() {
 	}
 	switch cmds[0] {
 	case "sha":
-		if len(cmds) != 3 {
-			log.Fatal("files not enough")
-		}
-		if checkFileSha256(cmds[1], cmds[2]) {
-			log.Println("equals")
-		} else {
-			log.Fatal("not equal")
+		if len(cmds) >= 1 {
+			checkFileSha256(cmds[1:])
 		}
 	case "e":
 		mustNotNull(inputFile, "input file")

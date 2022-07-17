@@ -25,5 +25,5 @@ file-encrypter d -k key -i inputfile -o outputfile
 ### compare sha256
 
 ```shell
-file-encrypter sha file1 file2
+file-encrypter sha file1 file2 ...
 ```
