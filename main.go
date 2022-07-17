@@ -122,20 +122,20 @@ func mustNotNull(s string, name string) {
 	}
 }
 
-func init() {
-	flag.StringVar(&inputFile, "i", "", "input file name")
-	flag.StringVar(&outputFile, "o", "", "output file name")
-	flag.StringVar(&key, "k", "", "aes key")
-}
-
 func main() {
-	flag.Parse()
-	keySha := sha256.Sum256([]byte(key))
-	//fmt.Printf("%x", keySha)
-	cmds := flag.Args()
+	fs := flag.NewFlagSet("rua", flag.ExitOnError)
+	fs.StringVar(&inputFile, "i", "", "input file name")
+	fs.StringVar(&outputFile, "o", "", "output file name")
+	fs.StringVar(&key, "k", "", "aes key")
+	cmds := os.Args[1:]
 	if len(cmds) < 1 {
 		log.Fatal("no commands")
 	}
+	err := fs.Parse(cmds[1:])
+	if err != nil {
+		log.Fatal(err)
+	}
+	keySha := sha256.Sum256([]byte(key))
 	switch cmds[0] {
 	case "sha":
 		if len(cmds) >= 1 {
