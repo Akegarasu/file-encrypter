@@ -91,10 +91,11 @@ func checkFileSha256(files []string) {
 	wg := sync.WaitGroup{}
 	mu := sync.Mutex{}
 	for _, f := range files {
+		n := f
 		go func() {
-			sha := shaFile(f)
+			sha := shaFile(n)
 			mu.Lock()
-			m[f] = sha
+			m[n] = sha
 			mu.Unlock()
 			wg.Done()
 		}()
